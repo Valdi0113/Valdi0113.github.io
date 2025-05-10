@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Juego de Probabilidad</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+
+  <style>
+    body {
+      background-color: #0a0a0a;;
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .contenedor {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 30px;
+      max-width: 100%;
+      margin-top: 50px;
+      z-index: 1;
+    }
+
+    .cartas {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      align-items: center;
+    }
+
+    img {
+      width: 150px;
+      height: auto;
+    }
+
+    img.home {
+      width: 35px;
+      height: 35px;
+    }
+
+    .botones {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      visibility: hidden; /* Inicialmente oculto */
+    }
+
+    .botones button {
+      padding: 10px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      background-color: #007bff;
+      color: white;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .botones button:hover {
+      background-color: #0056b3;
+    }
+
+    .card-flip {
+      perspective: 1000px;
+    }
+
+    .flip-inner {
+      transition: transform 0.6s;
+      transform-style: preserve-3d;
+      position: relative;
+      width: 150px;
+      height: 200px;
+      cursor: pointer;
+    }
+
+    .flipped {
+      transform: rotateY(180deg);
+    }
+
+    .front, .back {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+    }
+
+    .front img, .back img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .back {
+      transform: rotateY(180deg);
+    }
+
+    /* Resaltar ganadora */
+    .ganadora {
+      border: 4px solid gold;
+      border-radius: 10px;
+      box-shadow: 0 0 15px 5px yellow;
+    }
+
+    /* Resaltar el botón "Siguiente" */
+    .highlight {
+      border: 4px solid #28a745;
+      background-color: #28a745; /* Verde resaltado */
+      color: white;
+    }
+
+    /* Carita triste */
+    .emoji {
+      font-size: 80px;
+      animation: fadeInDown 1s ease-out;
+      position: absolute;
+      top: 20%;
+      z-index: 5;
+      display: none;
+    }
+
+    @keyframes fadeInDown {
+      from {
+        transform: translateY(-50px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    /* Texto de buen intento */
+    .texto-buen-intento {
+      font-size: 24px;
+      color: white;
+      font-weight: bold;
+      text-align: center;
+      animation: fadeInUp 1s ease-out;
+      display: none;
+      position: absolute;
+      bottom: 30px; /* Posiciona el texto justo debajo de los botones */
+      z-index: 5;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        transform: translateY(50px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    /* Lluvia */
+    .rain {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      background-image: url('../img/rain-10807.gif');
+      background-size: cover;
+      opacity: 0.3;
+      z-index: 0;
+      display: none;
+    }
+
+    /* Carita de victoria */
+    .victory-emoji {
+      font-size: 80px;
+      animation: fadeInUp 1s ease-out;
+      position: absolute;
+      top: 20%;
+      z-index: 5;
+      display: none;
+    }
+
+    /* Animación de confeti */
+    .confetti {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      background-image: url('../img/congratulations-7600.gif');
+      background-size: cover;
+      opacity: 0.8;
+      z-index: 0;
+      display: none;
+    }
+
+    /* Frase de felicitación */
+    .texto-felicidades {
+      font-size: 20px;
+      color: white;
+      font-weight: bold;
+      text-align: center;
+      animation: fadeInUp 1s ease-out;
+      position: absolute;
+      bottom: 10px;
+      z-index: 5;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="rain" id="lluvia"></div>
+  <div class="emoji" id="emoji">😢</div>
+  <div class="texto-buen-intento" id="textoBuenIntento">¡Buen intento, sigue participando!</div>
+  <div class="victory-emoji" id="victoryEmoji">🎉</div>
+  <div class="confetti" id="confetti"></div>
+  <div class="texto-felicidades" id="textoFelicidades">¡Felicidades! Has desbloqueado un nuevo nivel.</div>
+
+  <nav class="navbar  w-100" style="background-color: #0a0a0a; opacity: 80%;">
+    <div class="container-fluid d-flex justify-content-between align-items-center">
+      <a class="navbar-brand" href="../index.html"><img class="home" src="../img/home.png" alt="Menú principal"></a>
+      <div class="d-flex align-items-center me-2">
+        <span class="text-white ms-2 fw-bold">Probabilidad: </span>
+        <span class="text-dark ms-2 fw-bold"></span>
+        <img src="../img/as.png" class="img-fluid" alt="..." style="width: 25px; height: 35px;">
+        <span class="text-white ms-2 fw-bold">25%</span>
+      </div>
+    </div>
+  </nav>
+
+  <main class="contenedor">
+    <h2 style="color: aliceblue;">Nivel 2</h2>
+<div class="cartas">
+  <div class="card-flip">
+    <div class="flip-inner" data-index="0">
+      <div class="front">
+        <img src="../img/cartatra.png" alt="Front">
+      </div>
+      <div class="back">
+        <img class="back-image" src="" alt="Back">
+      </div>
+    </div>
+  </div>
+  <div class="card-flip">
+    <div class="flip-inner" data-index="1">
+      <div class="front">
+        <img src="../img/cartatra.png" alt="Front">
+      </div>
+      <div class="back">
+        <img class="back-image" src="" alt="Back">
+      </div>
+    </div>
+  </div>
+  <div class="card-flip">
+    <div class="flip-inner" data-index="2">
+      <div class="front">
+        <img src="../img/cartatra.png" alt="Front">
+      </div>
+      <div class="back">
+        <img class="back-image" src="" alt="Back">
+      </div>
+    </div>
+  </div>
+  <div class="card-flip">
+    <div class="flip-inner" data-index="3">
+      <div class="front">
+        <img src="../img/cartatra.png" alt="Front">
+      </div>
+      <div class="back">
+        <img class="back-image" src="" alt="Back">
+      </div>
+    </div>
+  </div>
+</div>
+
+    <div class="botones">
+      <button id="reiniciar">Reiniciar</button>
+      <button id="siguiente" onclick="window.location.href='../levels/level3.html'">Siguiente</button>
+    </div>
+  </main>
+
+  <script>
+    const cards = document.querySelectorAll('.flip-inner');
+    const backImages = document.querySelectorAll('.back-image');
+    const btnReiniciar = document.getElementById('reiniciar');
+    const btnSiguiente = document.getElementById('siguiente');
+    const emoji = document.getElementById('emoji');
+    const lluvia = document.getElementById('lluvia');
+    const textoBuenIntento = document.getElementById('textoBuenIntento');
+    const victoryEmoji = document.getElementById('victoryEmoji');
+    const confetti = document.getElementById('confetti');
+    const textoFelicidades = document.getElementById('textoFelicidades');
+
+    let hasPlayed = false;
+    let indexGanadora = 0;
+
+    function barajarCartas() {
+  hasPlayed = false;
+  emoji.style.display = 'none';
+  victoryEmoji.style.display = 'none';
+  lluvia.style.display = 'none';
+  textoBuenIntento.style.display = 'none';
+  textoFelicidades.style.display = 'none';
+  confetti.style.display = 'none';
+  btnSiguiente.style.visibility = 'hidden';
+  btnReiniciar.style.visibility = 'hidden';
+  btnSiguiente.classList.remove('highlight');
+
+  document.querySelectorAll('.flip-inner').forEach(card => {
+    card.classList.remove('flipped', 'ganadora');
+  });
+
+  const cartas = [
+    "../img/ases.png",
+    "../img/mala1.jpg",
+    "../img/mala2.jpg",
+    "../img/mala3.png"
+  ];
+
+  cartas.sort(() => Math.random() - 0.5);
+  indexGanadora = cartas.findIndex(src => src.includes("ases"));
+
+  backImages.forEach((img, i) => {
+    img.src = cartas[i];
+  });
+}
+
+
+    cards.forEach((card, i) => {
+      card.addEventListener('click', () => {
+        if (hasPlayed || card.classList.contains('flipped')) return;
+
+        card.classList.add('flipped');
+        const isWinner = backImages[i].src.includes('ases');
+        hasPlayed = true;
+
+        if (!isWinner) {
+          // Voltear todas
+          setTimeout(() => {
+            cards.forEach(c => c.classList.add('flipped'));
+            cards[indexGanadora].classList.add('ganadora');
+            emoji.style.display = 'block';
+            textoBuenIntento.style.display = 'block';
+            lluvia.style.display = 'block';
+            btnReiniciar.style.visibility = 'visible';  // Mostrar el botón "Reiniciar"
+          }, 800);
+        } else {
+          // Ganador
+            setTimeout(() => {
+                cards.forEach(c => c.classList.add('flipped')); // Voltear todas
+                victoryEmoji.style.display = 'block';
+                confetti.style.display = 'block';  // Mostrar animación de confeti
+                textoFelicidades.style.display = 'block';  // Mostrar texto de felicitación
+                btnSiguiente.style.visibility = 'visible';  // Mostrar el botón "Siguiente"
+                btnSiguiente.classList.add('highlight');  // Resaltar el botón "Siguiente"
+                cards[i].classList.add('ganadora'); // Resaltar la tarjeta ganadora
+            }, 800);
+        }
+      });
+    });
+
+    btnReiniciar.addEventListener('click', () => {
+  location.reload(); // Recarga la página completa
+});
+
+
+    // Inicial
+    barajarCartas();
+  </script>
+</body>
+</html>
